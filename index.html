@@ -1,0 +1,369 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCA Aptitude Trainer</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #edf1f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    text-align: center;
+    margin: 15px;
+}
+
+h1 {
+    color: #075c45;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.question-box {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 35px 0;
+    color: #173f35;
+    overflow-wrap: anywhere;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    font-size: 1.2rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 13px;
+    background: #075c45;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #03432f;
+}
+
+.feedback {
+    margin-top: 15px;
+    font-weight: bold;
+    min-height: 22px;
+}
+
+.correct {
+    color: green;
+}
+
+.incorrect {
+    color: red;
+}
+
+#game-screen, #result-screen {
+    display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="start-screen">
+
+    <h1>MCA Aptitude Trainer</h1>
+
+    <p>Challenge your calculation speed and accuracy!</p>
+
+    <p><b>Time:</b> 90 seconds</p>
+    <p><b>Correct:</b> +2 points</p>
+    <p><b>Incorrect:</b> -1 point</p>
+
+    <button onclick="startGame()">Start Training</button>
+
+</div>
+
+
+<div class="container" id="game-screen">
+
+    <div class="stats">
+        <span>Time: <span id="timer">90</span>s</span>
+        <span>Score: <span id="score">0</span></span>
+    </div>
+
+    <div class="question-box" id="question"></div>
+
+    <input type="number" id="answer"
+    placeholder="Enter your answer" autocomplete="off">
+
+    <button onclick="checkAnswer()">Submit Answer</button>
+
+    <div class="feedback" id="feedback"></div>
+
+</div>
+
+
+<div class="container" id="result-screen">
+
+    <h1>Training Completed!</h1>
+
+    <h2>Your Score: <span id="final-score">0</span></h2>
+
+    <p>Correct Answers: <span id="correct-count">0</span></p>
+
+    <p>Wrong Answers: <span id="wrong-count">0</span></p>
+
+    <button onclick="startAgain()">Try Again</button>
+
+</div>
+
+
+<script>
+
+let score = 0;
+let timeLeft = 90;
+let currentAnswer = 0;
+let correct = 0;
+let wrong = 0;
+let timerInterval;
+
+const questionEl = document.getElementById("question");
+const answerInput = document.getElementById("answer");
+const feedbackEl = document.getElementById("feedback");
+
+
+function generateQuestion() {
+
+    const types = [
+        "basic",
+        "percentage",
+        "square",
+        "cube",
+        "bodmas",
+        "division",
+        "fraction",
+        "root"
+    ];
+
+    let type = types[Math.floor(Math.random() * types.length)];
+
+    let a, b, c, result, qText;
+
+    if (type === "basic") {
+
+        a = Math.floor(Math.random() * 200) + 50;
+        b = Math.floor(Math.random() * 100) + 20;
+        c = Math.floor(Math.random() * 50) + 10;
+
+        qText = `${a} + ${b} × 2 - ${c}`;
+        result = a + (b * 2) - c;
+
+    }
+
+    else if (type === "percentage") {
+
+        a = [10, 20, 25, 40, 50, 75][Math.floor(Math.random() * 6)];
+        b = (Math.floor(Math.random() * 20) + 1) * 20;
+
+        qText = `${a}% of ${b}`;
+        result = (a * b) / 100;
+
+    }
+
+    else if (type === "square") {
+
+        a = Math.floor(Math.random() * 25) + 5;
+        b = Math.floor(Math.random() * 20) + 5;
+
+        qText = `${a}² - ${b}²`;
+        result = (a * a) - (b * b);
+
+    }
+
+    else if (type === "cube") {
+
+        a = Math.floor(Math.random() * 8) + 2;
+
+        qText = `${a}³ + ${a}`;
+        result = (a * a * a) + a;
+
+    }
+
+    else if (type === "bodmas") {
+
+        a = Math.floor(Math.random() * 15) + 5;
+        b = Math.floor(Math.random() * 10) + 2;
+        c = Math.floor(Math.random() * 10) + 2;
+
+        qText = `${a} + ${b} × ${c}`;
+        result = a + (b * c);
+
+    }
+
+    else if (type === "division") {
+
+        b = Math.floor(Math.random() * 15) + 2;
+        a = b * (Math.floor(Math.random() * 20) + 2);
+        c = Math.floor(Math.random() * 15) + 2;
+
+        qText = `${a} ÷ ${b} + ${c}`;
+        result = (a / b) + c;
+
+    }
+
+    else if (type === "fraction") {
+
+        a = Math.floor(Math.random() * 8) + 2;
+        b = Math.floor(Math.random() * 10) + 2;
+
+        qText = `1/${a} of ${a * b} + ${b}`;
+        result = b + b;
+
+    }
+
+    else {
+
+        a = Math.floor(Math.random() * 20) + 5;
+
+        qText = `√${a * a} + ${a}`;
+        result = a + a;
+
+    }
+
+    questionEl.textContent = qText + " = ?";
+    currentAnswer = result;
+
+    answerInput.value = "";
+    answerInput.focus();
+
+}
+
+
+function startGame() {
+
+    score = 0;
+    correct = 0;
+    wrong = 0;
+    timeLeft = 90;
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("timer").textContent = timeLeft;
+
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("result-screen").style.display = "none";
+    document.getElementById("game-screen").style.display = "block";
+
+    clearInterval(timerInterval);
+
+    generateQuestion();
+
+    timerInterval = setInterval(function() {
+
+        timeLeft--;
+
+        document.getElementById("timer").textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            endGame();
+        }
+
+    }, 1000);
+
+}
+
+
+function checkAnswer() {
+
+    if (timeLeft <= 0 || answerInput.value.trim() === "") {
+        return;
+    }
+
+    let userAns = Number(answerInput.value);
+
+    if (userAns === currentAnswer) {
+
+        score += 2;
+        correct++;
+
+        feedbackEl.textContent = "Correct! +2 points";
+        feedbackEl.className = "feedback correct";
+
+    }
+
+    else {
+
+        score -= 1;
+        wrong++;
+
+        feedbackEl.textContent = "Incorrect! -1 point";
+        feedbackEl.className = "feedback incorrect";
+
+    }
+
+    document.getElementById("score").textContent = score;
+
+    generateQuestion();
+
+}
+
+
+function endGame() {
+
+    clearInterval(timerInterval);
+
+    document.getElementById("game-screen").style.display = "none";
+    document.getElementById("result-screen").style.display = "block";
+
+    document.getElementById("final-score").textContent = score;
+    document.getElementById("correct-count").textContent = correct;
+    document.getElementById("wrong-count").textContent = wrong;
+
+}
+
+
+function startAgain() {
+    startGame();
+}
+
+
+answerInput.addEventListener("keyup", function(event) {
+
+    if (event.key === "Enter") {
+        checkAnswer();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
